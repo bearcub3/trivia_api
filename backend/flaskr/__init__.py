@@ -9,7 +9,8 @@ from models import setup_db, Question, Category
 QUESTIONS_PER_PAGE = 10
 
 
-# pagination method using slicing notation, only the items between start and end number will be shown per page
+# pagination method using slicing notation, only the items between start
+# and end number will be shown per page
 def pagination(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -91,13 +92,14 @@ def create_app(test_config=None):
     '''
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
-        try:
-            question = Question.query.filter(
-                Question.id == question_id).one_or_none()
 
-            if question is None:
-                abort(404)
+        question = Question.query.filter(
+            Question.id == question_id).one_or_none()
 
+        if question is None:
+            abort(404)
+
+        if question:
             question.delete()
 
             return jsonify({
@@ -105,7 +107,7 @@ def create_app(test_config=None):
                 'id': question_id
             })
 
-        except:
+        else:
             abort(500)
 
     '''
@@ -129,18 +131,14 @@ def create_app(test_config=None):
 
         print(body)
 
-        try:
-            question = Question(question=new_question, answer=new_answer,
-                                category=category, difficulty=difficulty)
-            # question = Question(**body)
-            question.insert()
+        question = Question(question=new_question, answer=new_answer,
+                            category=category, difficulty=difficulty)
+        # question = Question(**body)
+        question.insert()
 
-            return jsonify({
-                'success': True,
-            })
-
-        except:
-            abort(500)
+        return jsonify({
+            'success': True,
+        })
 
     '''
     @Done:
@@ -187,11 +185,12 @@ def create_app(test_config=None):
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
 
-        try:
-            questions = Question.query.filter(
-                Question.category == category_id)
+        questions = Question.query.filter(
+            Question.category == category_id)
 
-            category = Category.query.filter_by(id=category_id).first()
+        category = Category.query.filter_by(id=category_id).one_or_none()
+
+        if category:
 
             return jsonify({
                 'questions': [question.format() for question in questions.all()],
@@ -199,7 +198,7 @@ def create_app(test_config=None):
                 'current_category': category.type
             })
 
-        except:
+        elif category is None:
             abort(404)
 
     '''
@@ -265,14 +264,6 @@ def create_app(test_config=None):
             'error': 404,
             'message': 'resource not found'
         }), 404
-
-    @app.errorhandler(422)
-    def unprocessable(error):
-        return jsonify({
-            'success': False,
-            'error': 422,
-            'message': 'unprocessable'
-        }), 422
 
     @app.errorhandler(422)
     def unprocessable(error):
