@@ -162,13 +162,19 @@ def create_app(test_config=None):
                 Question.question.ilike('%{}%'.format(search_term)))
 
             return jsonify({
+                'success': True,
                 'questions': [question.format() for question in questions.all()],
                 'total_questions': len(questions.all()),
                 'current_category': None
             })
 
         else:
-            abort(404)
+            return jsonify({
+                'success': True,
+                'questions': [],
+                'total_questions': 0,
+                'current_category': None
+            })
 
     '''
     @Done:
